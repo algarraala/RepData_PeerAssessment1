@@ -7,19 +7,94 @@ output:
 
 
 ## Loading and preprocessing the data
+```{r loadpreprocessing, echo = T}
+dir <- "D:/Online courses/Coursera courses/Data Science Specialization/05- Reproducible research/Assignment_1/RepData_PeerAssessment1"
+setwd(dir)
+# Load the data after unzip it
+data <- read.csv(unz(paste(dir,"/activity.zip",sep = ""),filename = "activity.csv"))
+require(dplyr,quietly = T, warn.conflicts = FALSE)
+# Sum the number of steps per day to plot the histogram
+sumperday <- data %>% group_by(date) %>% summarise_each(funs(sum))
 
+```
 
 
 ## What is mean total number of steps taken per day?
+```{r histogram1, echo = T}
+# Plot the histogram
+hist(sumperday$steps, xlab = "Number of steps", main = "Total number of steps taken each day")
+```
 
+The following table shows the mean and median of the number of steps taken each day.
+
+```{r showtable, echo = T, results = "asis"}
+# Calculate the mean and median of the number of steps taken each day
+meanandmeadian <- data %>% group_by(date) %>% summarise_each_(funs(mean,median),"steps")
+
+require(xtable,quietly = T)
+xt <- xtable(meanandmeadian)
+print(xt, include.rownames=FALSE,type = "html")
+```
 
 
 ## What is the average daily activity pattern?
+```{r timeseriesplot, echo = T}
+# Calculate the average of steps taken in the 5 min interval across days
+meaninterval <- data %>% group_by(interval) %>% summarise_each_(funs(mean(., na.rm = T)),"steps")
+#plot the time series
+with(meaninterval,plot(interval,steps, type = "l",xlab = "Interval", ylab= "Number of steps", main = "Average number of steps taken in each 5 min interval across all days"))
+# Find the interval at which the number of steps is the maximum across all days
+maxint <- meaninterval[with(meaninterval,which.max(steps)),1]
+```
 
+The `r maxint`<sup>th</sup> interval is the on in which the number of steps is maximum across all days.
 
 
 ## Imputing missing values
 
+```{r NAnumber, echo = T}
+# Find out the number of NA in the data
+nanumber <- length(with(data,which(is.na(steps)== T)))
+```
 
+The number of non available (NA) data along all days and intervals is `r nanumber`.
+
+To replace the missing values, the data was grouped by each 5 min interval across days. The NA values were replaced by the mean of these 5 min intervals.
+
+```{r replaceNA, echo = T}
+# Create a new dataframe replacing all the NAs with the mean by interval
+newdata <- data %>% group_by(interval) %>% mutate(steps = replace(steps,is.na(steps),mean(steps,na.rm = T)))
+```
+
+The following figure shows the re-made histogram with all the missing values replaced by the mean of each interval across all days.
+
+
+```{r histogram2, echo = T}
+# Sum the number of steps per day to plot the histogram
+sumperday2 <- newdata %>% group_by(date) %>% summarise_each(funs(sum))
+# Plot histogram with new dataset
+hist(sumperday2$steps, xlab = "Number of steps", main = "Total number of steps taken each day")
+```
+
+The following table shows the mean and median of the number of steps taken each day after replacing the NA values with average values.
+
+
+```{r showtable2, echo = T, results = "asis"}
+# Calculate the mean and median of the number of steps taken each day
+meanandmeadian2 <- newdata %>% group_by(date) %>% summarise_each_(funs(mean,median),"steps")
+
+require(xtable,quietly = T)
+xt2 <- xtable(meanandmeadian2)
+print(xt2, include.rownames=FALSE,type = "html")
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r weekdays, echo = T}
+# Create the new factor variable with two levels = Weekday and Weekend, the calculate the average number of steps in each interval across weedays and weekend
+weekdaysdf <- newdata %>% mutate(weekday = factor(ifelse(weekdays(as.Date(date)) == "Saturday" | weekdays(as.Date(date)) =="Sunday","Weekend","Weekday"))) %>% group_by(weekday,interval) %>% summarise_each_(funs(mean),"steps")
+
+# Create the plot showing the average number of steps in each interval for the weekends and weekdays
+require(ggplot2, quietly = T)
+ggplot(weekdaysdf,aes(interval,steps)) + geom_line() + facet_grid(weekday~.) + ggtitle("Average number of steps taken in each 5 min interval across \n weekdays and weekends")
+
+```
