@@ -28,7 +28,7 @@ The following table shows the mean and median of the number of steps taken each 
 
 ```r
 # Calculate the mean and median of the number of steps taken each day
-meanandmeadian <- data %>% group_by(date) %>% summarise_each_(funs(mean,median = median),"steps")
+meanandmeadian <- data %>% group_by(date) %>% summarise_each_(funs(mean,median),"steps")
 
 require(xtable,quietly = T)
 xt <- xtable(meanandmeadian)
@@ -36,7 +36,7 @@ print(xt, include.rownames=FALSE,type = "html")
 ```
 
 <!-- html table generated in R 3.1.3 by xtable 1.7-4 package -->
-<!-- Sun Aug 16 18:46:24 2015 -->
+<!-- Sun Aug 16 19:06:08 2015 -->
 <table border=1>
 <tr> <th> date </th> <th> mean </th> <th> median </th>  </tr>
   <tr> <td> 2012-10-01 </td> <td align="right">  </td> <td align="right">  </td> </tr>
@@ -167,7 +167,7 @@ print(xt2, include.rownames=FALSE,type = "html")
 ```
 
 <!-- html table generated in R 3.1.3 by xtable 1.7-4 package -->
-<!-- Sun Aug 16 18:46:24 2015 -->
+<!-- Sun Aug 16 19:06:08 2015 -->
 <table border=1>
 <tr> <th> date </th> <th> mean </th> <th> median </th>  </tr>
   <tr> <td> 2012-10-01 </td> <td align="right"> 37.38 </td> <td align="right"> 34.11 </td> </tr>
@@ -234,6 +234,8 @@ print(xt2, include.rownames=FALSE,type = "html")
    </table>
 
 ## Are there differences in activity patterns between weekdays and weekends?
+To find out if there are differences in the activity patterns between weekdays and weekends I created a new factor variable called weekday. This new factor evaluates whether the day of the week (given by the weekdays function) is Saturday or Sunday, if it is, then it assigns the value "Weekend" to the new variable, if it is not, then it assigns "Weekday". 
+
 
 ```r
 # Create the new factor variable with two levels = Weekday and Weekend, the calculate the average number of steps in each interval across weedays and weekend

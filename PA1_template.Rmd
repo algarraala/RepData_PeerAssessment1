@@ -89,6 +89,8 @@ print(xt2, include.rownames=FALSE,type = "html")
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+To find out if there are differences in the activity patterns between weekdays and weekends I created a new factor variable called weekday. This new factor evaluates whether the day of the week (given by the weekdays function) is Saturday or Sunday, if it is, then it assigns the value "Weekend" to the new variable, if it is not, then it assigns "Weekday". 
+
 ```{r weekdays, echo = T}
 # Create the new factor variable with two levels = Weekday and Weekend, the calculate the average number of steps in each interval across weedays and weekend
 weekdaysdf <- newdata %>% mutate(weekday = factor(ifelse(weekdays(as.Date(date)) == "Saturday" | weekdays(as.Date(date)) =="Sunday","Weekend","Weekday"))) %>% group_by(weekday,interval) %>% summarise_each_(funs(mean),"steps")
